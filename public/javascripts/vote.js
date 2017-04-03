@@ -1,12 +1,14 @@
 //把方法封装在此对象里
 //取首页数据的偏移量
-let offset = 90;
+let offset = 0;
 let limit = 10;
 let total = 0;
 //当前浏览器URL中的路径
 let url = window.location.href;
 let indexReg = /\/vote\/index/;//首页的正则
 let registerReg = /\/vote\/register/;//注册页报名页的正则
+let detailReg = /\/vote\/detail/;
+let searchReg = /\/vote\/search/;//搜索页
 const USER_KEY = 'user';
 let voteFn = {
     //把用户数组转成li字符串
@@ -16,7 +18,7 @@ let voteFn = {
             `
                     <li>        
                         <div class="head">
-                           <a href="detail.html">
+                           <a href="/vote/detail/${user.id}">
                               <img src="${user.head_icon}" alt="">
                            </a>
                         </div>
@@ -29,7 +31,7 @@ let voteFn = {
                            </div>
                         </div>
                         <div class="descr">
-                           <a href="detail.html">
+                           <a href="/vote/detail/${user.id}">
                              <div>
                                 <span>${user.username}</span>
                                 <span>|</span>
@@ -90,6 +92,7 @@ let voteFn = {
         let user = voteFn.getStorage(USER_KEY);
         user = JSON.parse(user);
         if(user){
+            $('.sign_in span').text('已登入');
             $('.register a').text('个人主页');
             $('.username').text(user.username);
             $('.no_signed').hide();
@@ -129,6 +132,14 @@ let voteFn = {
                 }
             })
         });
+         voteFn.vote();
+        $('.search span').click(function () {
+            let search = $('.search input').val();
+            voteFn.setStorage('SEARCH',search);
+            location = '/vote/search';
+        });
+    },
+    vote(){
         $('.coming').on('click','.btn',function(event){
             let currEle = $(event.target);
             let user = voteFn.getUser();
@@ -208,6 +219,74 @@ let voteFn = {
                 }
             })
         });
+    },
+    formatUser(user){
+      return `
+      <div class="pl">
+					<div class="head">
+						<img src="${user.head_icon}" alt="">
+					</div>
+					<div class="p_descr">
+						<p>${user.username}</p>
+						<p>编号#${user.id}</p>
+					</div>
+				</div>
+				<div class="pr">
+					<div class="p_descr pr_descr">
+						<p>${user.rank}名</p>
+						<p>${user.vote}票</p>
+					</div>
+				</div>
+				<div class="motto">
+					${user.description}
+				</div>
+             `
+    },
+    formatFriends(friends){
+        return friends.map(function(user){
+            return `
+            <li>
+				    <div class="head">
+				        <a href="#"><img src="${user.head_icon}" alt=""></a>
+				    </div>
+				    <div class="up">
+				    	<div class="vote">
+				    		<span>投了一票</span>
+				    	</div>
+				    </div>
+				    <div class="descr">
+				        <h3>${user.username}</h3>
+				        <p>编号#${user.id}</p>
+				    </div>
+				</li>
+                   `
+        }).join('');
+    },
+    initDetail(){//初始化详情页
+        let reg = /\/vote\/detail\/(\d+)/;
+        let result = url.match(reg);
+        let id = result[1];
+        voteFn.request({
+            url:`/vote/all/detail/data?id=${id}`,
+            success(result){
+                let user = result.data;
+                $('.personal').html(voteFn.formatUser(user));
+                $('.vflist').html(voteFn.formatFriends(user.vfriend));
+            }
+        })
+    },
+    searchInit(){
+     let search = voteFn.getStorage('SEARCH');
+     voteFn.request({
+         url:`/vote/index/search?content=${search}`,
+         success(result){
+             if(result.data.length>0)
+               $('.coming').html(voteFn.formatUsers(result.data));
+             else
+                 $('.no-result').show();
+         }
+     })
+        voteFn.vote();
     }
 }
 $(function () {
@@ -217,5 +296,9 @@ $(function () {
         //则当前是报名页
     }else if(registerReg.test(url)){
         voteFn.initRegister();
+    }else if(detailReg.test(url)){
+        voteFn.initDetail();
+    }else if(searchReg.test(url)){
+        voteFn.searchInit();
     }
 })

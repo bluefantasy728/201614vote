@@ -776,3 +776,7 @@ a {
     box-shadow: 0 2px rgba(127, 212, 245, 0.37);
 }
 
+.no-result{
+    display:none;
+    text-align: center;
+}
