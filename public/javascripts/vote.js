@@ -24,7 +24,7 @@ let voteFn = {
                            <div class="vote">
                               <span>${user.vote}票</span>
                            </div>
-                           <div class="btn">
+                           <div data-id="${user.id}" class="btn">
                               投TA一票
                            </div>
                         </div>
@@ -129,12 +129,36 @@ let voteFn = {
                 }
             })
         });
+        $('.coming').on('click','.btn',function(event){
+            let currEle = $(event.target);
+            let user = voteFn.getUser();
+            if(user){//已经登录
+                let voterId = user.id;//得到投票人ID
+                let id = currEle.data('id');//被投票人ID
+                voteFn.request({
+                    url:`/vote/index/poll?id=${id}&voterId=${voterId}`,
+                    success(result){
+                        alert(result.msg);
+                        if(result.errno == 0){
+                            let voteNumEle = currEle.siblings('.vote').children('span');
+                            let oldNum = parseInt(voteNumEle.text());
+                            voteNumEle.html(`${oldNum+1}票`);
+                        }
+                    }
+                })
+            }else{
+                $('.mask').show();
+            }
+        });
     },
     setStorage(key,value){
         localStorage.setItem(key,value);
     },
     getStorage(key){
         return localStorage.getItem(key);
+    },
+    getUser(){
+      return voteFn.getStorage(USER_KEY)? JSON.parse(voteFn.getStorage(USER_KEY)):null;
     },
     clearStorage(key){
         localStorage.removeItem(key);
