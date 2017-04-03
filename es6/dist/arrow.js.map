@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/arrow.js"],"names":["sum","a","b","console","log"],"mappings":";;AAAA,IAAIA,MAAM,SAANA,GAAM,CAACC,CAAD,EAAGC,CAAH;AAAA,SAAOD,IAAEC,CAAT;AAAA,CAAV;AACAC,QAAQC,GAAR,CAAYJ,IAAI,CAAJ,EAAM,CAAN,CAAZ","file":"arrow.js","sourcesContent":["let sum = (a,b)=>a+b;\r\nconsole.log(sum(1,2));\r\n"]}
